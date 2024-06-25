@@ -34,3 +34,21 @@ If you have completed the above and have the canbus uuid of your CAN device in y
 
 Most toolheads will have a sample.cfg on their github, so it's usually a simple case of copy-pasting the required information from the sample into your own printer.cfg.
 
+## Optimizations
+
+Most CAN/USB configurations have at least two MCUs and that creates an inconvinience, when you need to update Klipper on your boards. The trouble is that you need to compile the Klipper and optiionally a Katapult for each board. If the default configuration is used that means setting all parameters for the MCU at least twice.
+
+The good news for you: There is a way to save the config and use it for the compilation. I would reccomend doing this for your printer. It will save time and spare you user errors in the future.
+The magic flag is `KCONFIG_CONFIG=<name>`.
+
+Here is an example: Let's say your main board is BTT Manta M8P and the toolhead is BTT SB2209(2040). Add this flag to your `make` commands related to M8P: `KCONFIG_CONFIG=config.manta` and this one to makes of SB2209: `KCONFIG_CONFIG=config.sb2209`. Here is the full commands:
+```bash
+make clean KCONFIG_CONFIG=config.manta
+make menuconfig KCONFIG_CONFIG=config.manta
+make KCONFIG_CONFIG=config.manta
+make flash FLASH_DEVICE=/dev/serial/by-id/usb-KlipperYourBoardId-if00 KCONFIG_CONFIG=config.manta
+```
+This will save the settings you made is the `make menuconfig` to a file called "config.manta" and "config.sb2209" respectively. When you need to update the Klipper, just use the KCONFIG_CONFIG flag and you won't have to re-configure the menuconfig.
+
+### Caution:
+It will only persist the configuration, but the compiled binary will be called klipper.bin and katapult.bin as usual. Please double check what configutaion you are sending to the MCU. 
